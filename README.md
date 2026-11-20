@@ -60,6 +60,16 @@ El workflow [`build-and-push.yml`](.github/workflows/build-and-push.yml) constru
 
 Uso manual desde la UI: **Actions → Build & Push MCP Docker image → Run workflow**.
 
+### Error `permission_denied: write_package`
+
+El workflow solicita `packages: write`, pero un paquete GHCR existente puede tener permisos independientes del repositorio. Si el push falla con este error:
+
+1. En el perfil de `Miguekos`, abre **Packages → mcp-docker → Package settings** con una cuenta administradora del paquete.
+2. En **Manage Actions access**, añade `Miguekos/mcp-docker` y concédele al menos el rol **Write**. Si el paquete hereda permisos de un repositorio, verifica que esté vinculado al repositorio correcto y que Actions tenga acceso.
+3. Vuelve a ejecutar el workflow desde **Actions** y comprueba que el paso **Build and push** publica la imagen.
+
+Si el paquete no existe o el error persiste, verifica las políticas y permisos de Actions y de GitHub Packages para la cuenta. Consulta la [documentación de acceso a paquetes para workflows](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#ensuring-workflow-access-to-your-package).
+
 ## Despliegue en Swarm
 
 1. Configura las variables:
