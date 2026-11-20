@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  mcp-docker:
+    # Imagen publicada por GitHub Actions en GitHub Container Registry
+    image: ghcr.io/miguekos/mcp-docker:latest
+    volumes:
+      # Socket de Docker en modo solo-lectura para limitar daños
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      # API key que supergateway exige en el header Authorization: Bearer <key>
+      - SUPERGATEWAY_API_KEY=${SUPERGATEWAY_API_KEY:?Defina SUPERGATEWAY_API_KEY en .env}
+      - PYTHONUNBUFFERED=1
+      - MCP_CMD_TIMEOUT=60
+      - MCP_MAX_OUTPUT=50000
+    networks:
+      - traefik
+    labels:
+      # --- Swarm ---
+      - com.docker.swarm.stack=mcp-docker
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          # Solo puede correr en un manager (necesita el socket con permisos)
+          - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
+
+networks:
+  traefik:
+    external: true
